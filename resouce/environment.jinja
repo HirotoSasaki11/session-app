@@ -1,0 +1,12 @@
+{% set PROJECT = env["project"] %}
+{% set DEPLOYMENT = env["deployment"] %}
+
+resources:
+- name: {{ env["deployment"] }}-redis
+  type: gcp-types/redis-v1:projects.locations.instances
+  properties:
+    parent: projects/{{ env["project"] }}/locations/{{ properties["region"] }}
+    instanceId: {{ env["deployment"] }}-redis
+    authorizedNetwork: projects/{{ env["project"] }}/global/networks/default
+    memorySizeGb: 1
+    tier: BASIC

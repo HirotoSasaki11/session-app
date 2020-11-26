@@ -1,0 +1,21 @@
+version: '3'
+services:
+  redis:
+    image: "redis:latest"
+    ports:
+      - "6379:6379"
+    volumes:
+      - "./data/redis:/data"
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/golang/Dockerfile
+    ports:
+      - "8080:8080"
+    tty:
+       true
+    volumes:
+      - ./:/go/src/app
+    environment:
+      RADIS_HOST: 127.0.0.1
+      RADIS_PORT: 6379

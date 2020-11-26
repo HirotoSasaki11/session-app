@@ -1,0 +1,8 @@
+imports:
+  - path: environment.jinja
+resources:
+  - name: environment
+    type: environment.jinja
+    properties:
+      region: asia-northeast1
+      zone: asia-northeast1-a
