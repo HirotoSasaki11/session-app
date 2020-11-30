@@ -2,8 +2,9 @@ package datastore
 
 import (
 	"context"
-	"os"
+	"log"
 	"session-sample/server/application/model"
+	"session-sample/server/config"
 
 	"cloud.google.com/go/datastore"
 )
@@ -14,15 +15,14 @@ type User struct {
 }
 
 func ProvideUser(client *datastore.Client) *User {
-	return &User{client: client}
+	return &User{client: client, kind: model.UsersEntityName}
 }
 
 func (u *User) NewKey(kind, name string) *datastore.Key {
-	namaSpace := os.Getenv("NAMEAPACE")
 	return &datastore.Key{
 		Name:      name,
 		Kind:      kind,
-		Namespace: namaSpace,
+		Namespace: config.NameSpace,
 	}
 }
 func (u *User) Create(ctx context.Context, user *model.User) error {
@@ -44,10 +44,57 @@ func (u *User) GetByID(ctx context.Context, user *model.User) (*model.User, erro
 
 func (u *User) GetByName(ctx context.Context, user *model.User) (*model.User, error) {
 	var data []model.User
-	q := datastore.NewQuery(u.kind).Namespace(os.Getenv("NAMEAPACE")).Filter("Email", user.Name).Limit(1)
+	q := datastore.NewQuery(u.kind).Namespace(config.NameSpace).Filter("Email", user.Email).Limit(1)
 	_, err := u.client.GetAll(ctx, q, &data)
 	if err != nil {
 		return nil, err
 	}
 	return &data[0], nil
+}
+
+func (u *User) Exists(ctx context.Context, user *model.User) (bool, error) {
+	existsID, err := u.ExistsID(ctx, user)
+	if err != nil {
+		return false, err
+	}
+	existsEmail, err := u.ExistsEmail(ctx, user)
+	if err != nil {
+		return false, err
+	}
+	if existsEmail || existsID {
+		return true, nil
+	}
+	return false, nil
+}
+func (u *User) ExistsID(ctx context.Context, user *model.User) (bool, error) {
+	data := new(model.User)
+	key := u.NewKey(u.kind, user.ID)
+	log.Println(key)
+	err := u.client.Get(ctx, key, data)
+	if err != nil {
+		if err == datastore.ErrNoSuchEntity {
+			return false, nil
+		}
+		return false, err
+	} else if data != nil {
+		log.Println("ID is exists")
+		return true, nil
+	}
+	return false, nil
+}
+
+func (u *User) ExistsEmail(ctx context.Context, user *model.User) (bool, error) {
+	var data []model.User
+	q := datastore.NewQuery(u.kind).Namespace(config.NameSpace).Filter("Email =", user.Email).Limit(1)
+	_, err := u.client.GetAll(ctx, q, &data)
+	if err != nil {
+		if err == datastore.ErrNoSuchEntity {
+			return false, nil
+		}
+		return false, err
+	} else if 0 < len(data) {
+		log.Println("Email is exists")
+		return true, nil
+	}
+	return false, nil
 }

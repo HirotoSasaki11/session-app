@@ -5,22 +5,22 @@ import (
 	r "session-sample/server/adapter/driver/redis"
 
 	"cloud.google.com/go/datastore"
-	"github.com/gomodule/redigo/redis"
+	"github.com/go-redis/redis/v8"
 )
 
 type Resource struct {
-	ConectRedis redis.Conn
+	RedisClient *redis.Client
 	DsClient    *datastore.Client
 }
 
-func NewResouce() Resource {
+func NewResouceForRedisApplication() Resource {
 	return Resource{
-		ConectRedis: r.Connection(),
+		RedisClient: r.Connection(),
 		DsClient:    ds.NewClient(),
 	}
 }
 
-func (r *Resource) Finilize() {
+func (r *Resource) FinilizeForRedisApplication() {
 	r.ConectRedis.Close()
 	r.DsClient.Close()
 }

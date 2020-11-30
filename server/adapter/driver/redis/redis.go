@@ -2,17 +2,20 @@ package redis
 
 import (
 	"fmt"
-	"os"
+	"session-sample/server/config"
 
-	"github.com/gomodule/redigo/redis"
+	"github.com/go-redis/redis/v8"
 )
 
-func Connection() redis.Conn {
-	host := os.Getenv("RADIS_HOST")
-	port := os.Getenv("RADIS_PORT")
-	con, err := redis.Dial("tcp", fmt.Sprintf("%s:%s", host, port))
-	if err != nil {
-		panic(err)
-	}
-	return con
+func Connection() *redis.Client {
+	client := redis.NewClient(&redis.Options{
+		Addr: fmt.Sprintf("%s:%s", config.RedisHost, config.RedisPort),
+	})
+
+	// con, err := redis.Dial("tcp", fmt.Sprintf("%s:%s", config.RedisHost, config.RedisPort))
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// return con
+	return client
 }

@@ -17,7 +17,7 @@ func NewRouter(r registry.Resource, p Provide) *chi.Mux {
 	mux.Post("/session", p.Session.Get)
 	mux.Route("/users", func(r chi.Router) {
 		r.Get("/{userid}", p.User.GetByID)
-		r.Post("", p.User.Create)
+		r.Post("/", p.User.Create)
 	})
 	return mux
 }

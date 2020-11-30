@@ -2,14 +2,12 @@ package memcache
 
 import (
 	"fmt"
-	"os"
+	"session-sample/server/config"
 
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
 func Connection() *memcache.Client {
-	host := os.Getenv("MEMCACHE_HOST")
-	port := os.Getenv("MEMCACHE_PORT")
-	mc := memcache.New(fmt.Sprintf("%s:%s", host, port))
+	mc := memcache.New(fmt.Sprintf("%s:%s", config.MemCacheHost, config.MemCachePort))
 	return mc
 }

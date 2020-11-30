@@ -2,15 +2,16 @@ package datastore
 
 import (
 	"context"
-	"os"
+	"session-sample/server/config"
 
 	"cloud.google.com/go/datastore"
+	"google.golang.org/api/option"
 )
 
 func NewClient() *datastore.Client {
 	ctx := context.Background()
-	id := os.Getenv("PROJECTID")
-	client, err := datastore.NewClient(ctx, id)
+	opt := option.WithCredentialsJSON([]byte(config.Credentials))
+	client, err := datastore.NewClient(ctx, config.ProjectID, opt)
 	if err != nil {
 		panic(err)
 	}

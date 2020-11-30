@@ -1,22 +1,28 @@
 package application
 
 import (
+	"context"
+	"log"
 	"session-sample/server/application/model"
+	"session-sample/server/application/repository"
 )
 
-type UserInterface interface {
-	Create(user model.User) error
-	GetByID(id string) (*model.User, error)
-}
-
 type User struct {
-	Interface UserInterface
+	User repository.User
 }
 
-func (u *User) Create(user model.User) error {
-	return u.Interface.Create(user)
+func (u *User) Create(ctx context.Context, user *model.User) error {
+	exists, err := u.User.Exists(ctx, user)
+	if err != nil {
+		panic(err)
+	} else if exists {
+		log.Println("bad request.")
+		return nil
+	}
+
+	return u.User.Create(ctx, user)
 }
 
-func (u *User) GetByID(id string) (*model.User, error) {
-	return u.Interface.GetByID(id)
+func (u *User) GetByID(ctx context.Context, id string) (*model.User, error) {
+	return u.GetByID(ctx, id)
 }
