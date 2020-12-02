@@ -33,13 +33,14 @@ func (u *User) Create(ctx context.Context, user *model.User) error {
 	return nil
 }
 
-func (u *User) GetByID(ctx context.Context, user *model.User) (*model.User, error) {
-	var data *model.User
-	err := u.client.Get(ctx, u.NewKey(u.kind, user.ID), *data)
+func (u *User) GetByID(ctx context.Context, id string) (*model.User, error) {
+	user := new(model.User)
+	err := u.client.Get(ctx, u.NewKey(u.kind, id), user)
 	if err != nil {
 		return nil, err
 	}
-	return data, nil
+	log.Println(user)
+	return user, nil
 }
 
 func (u *User) GetByName(ctx context.Context, user *model.User) (*model.User, error) {

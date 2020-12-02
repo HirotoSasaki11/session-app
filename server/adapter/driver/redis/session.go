@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"session-sample/server/application/model"
 	"session-sample/server/config"
+	"session-sample/server/lib"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/rbcervilla/redisstore/v8"
@@ -58,7 +59,7 @@ func ProveideSession(client *redis.Client) *Session {
 // 	return nil
 // }
 
-func (s Session) Get(ctx context.Context, w http.ResponseWriter, r *http.Request, id string) (*model.User, error) {
+func (s Session) Get(ctx context.Context, w http.ResponseWriter, r *http.Request) (*model.User, error) {
 	user := new(model.User)
 	store, err := redisstore.NewRedisStore(ctx, s.client)
 	if err != nil {
@@ -70,36 +71,43 @@ func (s Session) Get(ctx context.Context, w http.ResponseWriter, r *http.Request
 		log.Fatal("failed to create redis store: ", err)
 		return nil, err
 	}
-	if sess.Values[id] == nil {
+	log.Println(sess.Values)
+	if sess.Values[sess.ID] == nil {
 		log.Println("not found session id.")
 		return nil, nil
 	}
-	err = json.Unmarshal([]byte(sess.Values[id].(string)), user)
+	err = json.Unmarshal([]byte(sess.Values[sess.ID].(string)), user)
 	if err != nil {
 		return nil, err
 	}
-
+	log.Println(user)
 	return user, nil
 }
 
-func (s Session) Set(w http.ResponseWriter, r *http.Request, user *model.User) error {
-	store, err := redisstore.NewRedisStore(context.Background(), s.client)
+func (s Session) Set(ctx context.Context, w http.ResponseWriter, r *http.Request, user *model.User) error {
+	store, err := redisstore.NewRedisStore(ctx, s.client)
 	if err != nil {
 		log.Fatal("failed to create redis store: ", err)
 		return err
 	}
+
 	sess, err := store.New(r, config.SessionKey)
 	if err != nil {
 		return err
 	}
+	id := lib.NewStringID()
+
+	log.Println(id)
 	data, err := json.Marshal(user)
 	if err != nil {
 		return err
 	}
-	sess.Values[user.ID] = string(data)
+	sess.Values[id] = string(data)
 	if err := sess.Save(r, w); err != nil {
 		log.Printf("Error saving session: %v", err)
 		return err
 	}
+
+	log.Println(sess.ID)
 	return nil
 }

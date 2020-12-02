@@ -21,6 +21,5 @@ func NewResouceForRedisApplication() Resource {
 }
 
 func (r *Resource) FinilizeForRedisApplication() {
-	r.ConectRedis.Close()
 	r.DsClient.Close()
 }

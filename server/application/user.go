@@ -14,7 +14,7 @@ type User struct {
 func (u *User) Create(ctx context.Context, user *model.User) error {
 	exists, err := u.User.Exists(ctx, user)
 	if err != nil {
-		panic(err)
+		return err
 	} else if exists {
 		log.Println("bad request.")
 		return nil

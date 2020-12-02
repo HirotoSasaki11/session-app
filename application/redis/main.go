@@ -24,6 +24,7 @@ func main() {
 		Session: &router.Session{
 			Session: &application.Session{
 				Session: redis.ProveideSession(resources.RedisClient),
+				User:    datastore.ProvideUser(resources.DsClient),
 			},
 		},
 	}
