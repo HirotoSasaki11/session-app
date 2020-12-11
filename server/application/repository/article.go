@@ -1,10 +1,11 @@
 package repository
 
 import (
+	"context"
 	"session-sample/server/application/model"
 )
 
 type Article interface {
-	Get(id string) (*model.Article, error)
-	Create(model.Article) error
+	GetByID(ctx context.Context, id string) (*model.Article, error)
+	Create(ctx context.Context, article *model.Article) (*model.Article, error)
 }

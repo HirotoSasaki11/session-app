@@ -27,6 +27,11 @@ func main() {
 				User:    datastore.ProvideUser(resources.DsClient),
 			},
 		},
+		Article: &router.Article{
+			Article: &application.Article{
+				Article: datastore.ProvideArticle(resources.DsClient),
+			},
+		},
 	}
 	err := http.ListenAndServe(":8080", router.NewRouter(resources, *p))
 	if err != nil {

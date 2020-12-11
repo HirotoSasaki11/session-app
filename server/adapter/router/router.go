@@ -10,6 +10,7 @@ import (
 type Provide struct {
 	User    *User
 	Session *Session
+	Article *Article
 }
 
 func NewRouter(r registry.Resource, p Provide) *chi.Mux {
@@ -21,6 +22,10 @@ func NewRouter(r registry.Resource, p Provide) *chi.Mux {
 	mux.Route("/users", func(r chi.Router) {
 		r.Get("/{user_id}", p.User.GetByID)
 		r.Post("/", p.User.Create)
+	})
+	mux.Route("/article", func(r chi.Router) {
+		r.Get("/{article_id}", p.Article.GetByID)
+		r.Post("/", p.Article.Create)
 	})
 	return mux
 }

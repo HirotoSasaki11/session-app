@@ -17,3 +17,11 @@ func NewClient() *datastore.Client {
 	}
 	return client
 }
+
+func NewKey(kind, name string) *datastore.Key {
+	return &datastore.Key{
+		Name:      name,
+		Kind:      kind,
+		Namespace: config.NameSpace,
+	}
+}

@@ -1,5 +1,7 @@
 package model
 
+const ArticleEntityName = "article"
+
 type Article struct {
 	ID      string `json:"id"`
 	UserID  string `json:"user_id"`

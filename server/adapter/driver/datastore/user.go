@@ -18,15 +18,8 @@ func ProvideUser(client *datastore.Client) *User {
 	return &User{client: client, kind: model.UsersEntityName}
 }
 
-func (u *User) NewKey(kind, name string) *datastore.Key {
-	return &datastore.Key{
-		Name:      name,
-		Kind:      kind,
-		Namespace: config.NameSpace,
-	}
-}
 func (u *User) Create(ctx context.Context, user *model.User) error {
-	_, err := u.client.Put(ctx, u.NewKey(u.kind, user.ID), user)
+	_, err := u.client.Put(ctx, NewKey(u.kind, user.ID), user)
 	if err != nil {
 		return err
 	}
@@ -35,11 +28,10 @@ func (u *User) Create(ctx context.Context, user *model.User) error {
 
 func (u *User) GetByID(ctx context.Context, id string) (*model.User, error) {
 	user := new(model.User)
-	err := u.client.Get(ctx, u.NewKey(u.kind, id), user)
+	err := u.client.Get(ctx, NewKey(u.kind, id), user)
 	if err != nil {
 		return nil, err
 	}
-	log.Println(user)
 	return user, nil
 }
 
@@ -69,7 +61,7 @@ func (u *User) Exists(ctx context.Context, user *model.User) (bool, error) {
 }
 func (u *User) ExistsID(ctx context.Context, user *model.User) (bool, error) {
 	data := new(model.User)
-	key := u.NewKey(u.kind, user.ID)
+	key := NewKey(u.kind, user.ID)
 	log.Println(key)
 	err := u.client.Get(ctx, key, data)
 	if err != nil {

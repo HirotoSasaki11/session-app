@@ -5,11 +5,13 @@ import (
 	"net/http"
 )
 
-func Json(w http.ResponseWriter, v interface{}) {
+func Json(w http.ResponseWriter, v interface{}) error {
 	err := json.NewEncoder(w).Encode(v)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		return err
 	}
+	return nil
 }
 
 func BodyToJson(r *http.Request, v interface{}) error {
