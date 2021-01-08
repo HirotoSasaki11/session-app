@@ -4,3 +4,22 @@ services:
     image: "memcached:latest"
     ports:
       - "11211:11211"
+  app:
+    build:
+      context: .
+      dockerfile: $PWD/docker/golang/Dockerfile
+    ports:
+      - "8080:8080"
+    tty:
+       true
+    volumes:
+      - $PWD:/go/src/app
+    environment:
+      MEMCACHE_HOST: memcached
+      MEMCACHE_PORT: 11211
+      NAMEAPACE: "test_memcached"
+      PROJECTID: "sandbox-hirotosasaki"
+      SESSIONKEY: "session-key"
+      CREDENTIALS: '{{key}}'
+    command: go run application/redis/main.go
+

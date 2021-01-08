@@ -1,18 +1,41 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/bradfitz/gomemcache/memcache"
+	"log"
+	"net/http"
+	"session-sample/server/adapter/driver/datastore"
+	"session-sample/server/adapter/driver/memcache"
+	"session-sample/server/adapter/router"
+	"session-sample/server/application"
+	"session-sample/server/registry"
 )
 
 func main() {
-	mc := memcache.New("127.0.0.1:11211")
-	mc.Set(&memcache.Item{Key: "foo", Value: []byte("my value")})
+	log.Println("start application")
+	resources := registry.NewResouceForMemCachedApplication()
+	defer resources.FinilizeForMemCachedApplication()
 
-	it, err := mc.Get("foo")
-	if err != nil {
-		panic(err)
+	p := &router.Provide{
+		User: &router.User{
+			User: &application.User{
+				User: datastore.ProvideUser(resources.DsClient),
+			},
+		},
+		Session: &router.Session{
+			Session: &application.Session{
+				Session: memcache.ProveideSession(resources.Memcached),
+				User:    datastore.ProvideUser(resources.DsClient),
+			},
+		},
+		Article: &router.Article{
+			Article: &application.Article{
+				Article: datastore.ProvideArticle(resources.DsClient),
+			},
+		},
 	}
-	fmt.Println(string(it.Value))
+	err := http.ListenAndServe(":8080", router.NewRouter(resources, *p))
+	if err != nil {
+		log.Fatal("ListenAndServe", err)
+	}
+	log.Println("start application")
 }

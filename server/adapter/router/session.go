@@ -33,6 +33,24 @@ func (s *Session) Get(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
+	} else if user != nil {
+		w.WriteHeader(http.StatusBadRequest)
 	}
-	lib.Json(w, user)
+	w.WriteHeader(http.StatusOK)
+	// lib.Json(w, user)
+}
+
+func (s *Session) Security(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.Background()
+		user, err := s.Session.Get(ctx, w, r)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		} else if user == nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }

@@ -1,36 +1,63 @@
 package memcache
 
 import (
+	"context"
 	"encoding/json"
+	"log"
+	"net/http"
 	"session-sample/server/application/model"
+	"session-sample/server/config"
+	"session-sample/server/lib"
 
-	"github.com/bradfitz/gomemcache/memcache"
+	gsm "github.com/bradleypeabody/gorilla-sessions-memcache"
+	"github.com/memcachier/mc"
 )
 
 type Session struct {
-	mc *memcache.Client
+	client *mc.Client
 }
 
-func (s Session) Get(key string) (*model.User, error) {
+func ProveideSession(client *mc.Client) *Session {
+	return &Session{client: client}
+}
+func (s *Session) Get(ctx context.Context, w http.ResponseWriter, r *http.Request) (*model.User, error) {
 	var user *model.User
 
-	item, err := s.mc.Get(key)
+	store := gsm.NewMemcacherStore(s.client, "", []byte(config.SessionKey))
+	sess, err := store.Get(r, config.SessionKey)
+
+	if err != nil {
+		log.Fatal("failed to create redis store: ", err)
+		return nil, err
+	}
+
+	_, ok := sess.Values[sess.ID]
+	if !ok {
+		log.Println("not found session id.")
+		return nil, nil
+	}
+	err = json.Unmarshal([]byte(sess.Values[sess.ID].(string)), user)
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal(item.Value, user)
-	if err != nil {
-		return nil, err
-	}
+	log.Println(user)
 	return user, nil
 }
-func (s Session) Set(key, value string) error {
-	item := &memcache.Item{
-		Key:   key,
-		Value: []byte(value),
-	}
-	err := s.mc.Set(item)
+func (s *Session) Set(ctx context.Context, w http.ResponseWriter, r *http.Request, user *model.User) error {
+	store := gsm.NewMemcacherStore(s.client, "", []byte(config.SessionKey))
+	sess, err := store.New(r, config.SessionKey)
 	if err != nil {
+		return err
+	}
+	sess.ID = lib.NewStringID()
+
+	data, err := json.Marshal(user)
+	if err != nil {
+		return err
+	}
+	sess.Values[sess.ID] = string(data)
+	if err := sess.Save(r, w); err != nil {
+		log.Printf("Error saving session: %v", err)
 		return err
 	}
 	return nil

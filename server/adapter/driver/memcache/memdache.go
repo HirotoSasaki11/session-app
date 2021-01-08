@@ -1,13 +1,12 @@
 package memcache
 
 import (
-	"fmt"
 	"session-sample/server/config"
 
-	"github.com/bradfitz/gomemcache/memcache"
+	"github.com/memcachier/mc"
 )
 
-func Connection() *memcache.Client {
-	mc := memcache.New(fmt.Sprintf("%s:%s", config.MemCacheHost, config.MemCachePort))
+func Connection() *mc.Client {
+	mc := mc.NewMC(config.MemCacheHost, config.MemCachePort, "")
 	return mc
 }
